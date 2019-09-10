@@ -26,58 +26,40 @@ resource "aws_instance" "openvpn_access_server" {
   provisioner "remote-exec" {
     inline = [
       "sudo apt update -y",
-      "sudo apt install -y docker.io",
-      "sudo mkdir -p /maruvpn/config",
+      "sudo mkdir /maruvpn",
       "sudo chown -hR $USER:$USER /maruvpn",
       "sudo chmod -R 777 /maruvpn"
     ]
   }
 
   provisioner "file" {
-    source      = "docker-run.sh"
-    destination = "/maruvpn/docker-run.sh"
+    source      = "openvpn-install/openvpn-install.sh"
+    destination = "/maruvpn/openvpn-install.sh"
   }
 
+  # Install openvpn and create ${var.client}.ovpn file (under home(~) directory)
+  ## Client is passwordless($PASS=1 (default))
+  ## PORT_CHOICE=2 enables custom PORT configuration
+  ## If COMPRESSION_ENABLED is enabled, COMPRESSION_CHOICE and COMPRESSION_ALG should be configured
   provisioner "remote-exec" {
-    inline = [
-      "sudo chmod +x /maruvpn/docker-run.sh",
-      "sudo /maruvpn/docker-run.sh Europe/London",
+
+    inline = [<<EOF
+
+      sudo chmod +x /maruvpn/openvpn-install.sh
+      sudo \
+      AUTO_INSTALL=y \
+      ENDPOINT=${aws_instance.openvpn_access_server.public_ip} \
+      IPV6_SUPPORT=n \
+      PORT_CHOICE=2 \
+      PORT=${var.port} \
+      PROTOCOL_CHOICE=${var.protocol_choice[var.protocol]} \
+      DNS=${var.dns_choice[var.dns]} \
+      COMPRESSION_ENABLED=${var.yn_choice[var.enable_compression]} \
+      CUSTOMIZE_ENC=${var.yn_choice[var.customize_encryption]} \
+      CLIENT=${var.client} \
+      /maruvpn/openvpn-install.sh
+      
+    EOF
     ]
   }
 }
-
-# resource "docker_image" "openvpn_as" {
-#   name = "linuxserver/openvpn-as"
-# }
-
-# # Creates a docker volume
-# resource "docker_volume" "openvpn_as_config" {
-#   name = "openvpn-as-config"
-# }
-
-# # Create a container
-# resource "docker_container" "openvpn_as" {
-#   image    = "${docker_image.openvpn_as.latest}"
-#   name     = "openvpn-as"
-#   restart  = "unless-stopped"
-#   start    = "true"
-#   must_run = "true"
-#   env      = ["PUID=1000", "PGID=1000", "TZ=Europe/London"]
-#   ports {
-#     external = 943
-#     internal = 943
-#   }
-#   ports {
-#     external = 9443
-#     internal = 9443
-#   }
-#   ports {
-#     external = 1194
-#     internal = 1194
-#     protocol = "udp"
-#   }
-#   volumes {
-#     container_path = "/config"
-#     volume_name    = "${docker_volume.openvpn_as_config.name}"
-#   }
-# }

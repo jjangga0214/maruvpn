@@ -10,7 +10,3 @@ output "instance_id" {
 output "az" {
   value = aws_instance.openvpn_access_server.availability_zone
 }
-
-# output "config_mountpoint" {
-#   value = docker_volume.openvpn_as_config.mountpoint
-# }

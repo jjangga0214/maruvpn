@@ -98,25 +98,9 @@ resource "aws_security_group" "allow_openvpn" {
   vpc_id      = "${aws_vpc.vpc.id}"
 
   ingress {
-    from_port        = 943
-    to_port          = 943
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  ingress {
-    from_port        = 9443
-    to_port          = 9443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  ingress {
-    from_port        = 1194
-    to_port          = 1194
-    protocol         = "udp"
+    from_port        = var.port
+    to_port          = var.port
+    protocol         = var.protocol
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
