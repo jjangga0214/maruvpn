@@ -1,6 +1,19 @@
+resource "random_string" "ssh_keys" {
+  length  = 24
+  special = false
+  keepers = {
+    # Generate a new id each time we switch to a new AMI id
+    ssh_public_key    = "${file(var.ssh_public_key_path)}"
+    ssh_private_key   = "${file(var.ssh_private_key_path)}"
+    aws_key_pair_name = var.aws_key_pair_name
+  }
+}
+
 resource "aws_key_pair" "key_pair" {
-  key_name   = var.aws_key_pair_name
-  public_key = "${file(var.ssh_public_key_path)}"
+  key_name = "${random_string.ssh_keys.keepers.aws_key_pair_name}-${random_string.ssh_keys.result}"
+  # Read the public_key "through" the random_string resource to ensure that
+  # both will change together.
+  public_key = "${random_string.ssh_keys.keepers.ssh_public_key}"
 }
 
 resource "aws_instance" "openvpn_access_server" {
@@ -19,7 +32,7 @@ resource "aws_instance" "openvpn_access_server" {
   connection {
     type        = "ssh"
     user        = var.ssh_user
-    private_key = "${file(var.ssh_private_key_path)}"
+    private_key = "${random_string.ssh_keys.keepers.ssh_private_key}"
     host        = "${aws_instance.openvpn_access_server.public_ip}"
   }
 
@@ -43,7 +56,7 @@ resource "aws_instance" "openvpn_access_server" {
   ## If COMPRESSION_ENABLED is enabled, COMPRESSION_CHOICE and COMPRESSION_ALG should be configured
   provisioner "remote-exec" {
 
-    inline = [<<EOF
+    inline = [<<-EOF
 
       sudo chmod +x /maruvpn/openvpn-install.sh
       sudo \

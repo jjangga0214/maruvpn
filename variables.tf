@@ -40,20 +40,21 @@ variable "protocol" {
 variable "protocol_choice" {
   type = "map"
   default = {
-    "1" = "udp"
-    "2" = "tcp"
+    "udp" = "1"
+    "tcp" = "2"
   }
 }
 
 variable "dns" {
   default = "CLOUDFLARE"
 }
+
 variable "dns_choice" {
   type = "map"
   default = {
-    "3" = "CLOUDFLARE"
-    "8" = "OPENDNS"
-    "9" = "GOOGLE"
+    "CLOUDFLARE" = "3"
+    "OPENDNS"    = "8"
+    "GOOGLE"     = "9"
   }
 }
 
@@ -61,8 +62,8 @@ variable "dns_choice" {
 variable "yn_choice" {
   type = "map"
   default = {
-    "y" = true
-    "n" = false
+    true  = "y"
+    false = "n"
   }
 }
 
