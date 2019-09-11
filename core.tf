@@ -56,7 +56,7 @@ resource "aws_instance" "openvpn_access_server" {
   ## If COMPRESSION_ENABLED is enabled, COMPRESSION_CHOICE and COMPRESSION_ALG should be configured
   provisioner "remote-exec" {
 
-    inline = [<<-EOF
+    inline = [<<EOF
 
       sudo chmod +x /maruvpn/openvpn-install.sh
       sudo \
